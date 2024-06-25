@@ -1,7 +1,7 @@
 package confcrypt
 
 import (
-	"errors"
+	"fmt"
 	"os"
 	"reflect"
 )
@@ -26,12 +26,14 @@ func DecodeByEnv(v interface{}, opts ...DecodeOption) error {
 	}
 	key := os.Getenv(o.env)
 	if key == "" {
-		return ErrEmptyKey
+		err := DecodeInplace(v, key)
+		if err != nil {
+			return fmt.Errorf("empty key: %w", err)
+		}
+		return nil
 	}
 	return DecodeInplace(v, key)
 }
-
-var ErrEmptyKey = errors.New("empty key")
 
 var defaultOption = decodeOption{
 	env: "CONFIG_KEY",

@@ -2,6 +2,7 @@ package confcrypt_test
 
 import (
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/WqyJh/confcrypt"
@@ -95,7 +96,7 @@ func TestDecodeByEnv(t *testing.T) {
 	assert.NotEqual(t, expected, origin)
 
 	err := confcrypt.DecodeByEnv(&origin)
-	assert.Equal(t, confcrypt.ErrEmptyKey, err)
+	assert.True(t, strings.Contains(err.Error(), "empty key"))
 
 	os.Setenv("CONFIG_KEY", key)
 	err = confcrypt.DecodeByEnv(&origin)
@@ -106,10 +107,15 @@ func TestDecodeByEnv(t *testing.T) {
 	origin, expected = getData(t, key)
 	assert.NotEqual(t, expected, origin)
 	err = confcrypt.DecodeByEnv(&origin, confcrypt.WithEnv("CONFIG_KEY_2"))
-	assert.Equal(t, confcrypt.ErrEmptyKey, err)
+	assert.True(t, strings.Contains(err.Error(), "empty key"))
 
 	os.Setenv("CONFIG_KEY_2", key)
 	err = confcrypt.DecodeByEnv(&origin, confcrypt.WithEnv("CONFIG_KEY_2"))
 	assert.NoError(t, err)
 	assert.Equal(t, expected, origin)
+
+	os.Unsetenv("CONFIG_KEY")
+	os.Unsetenv("CONFIG_KEY_2")
+	err = confcrypt.DecodeByEnv(&expected)
+	assert.NoError(t, err)
 }
